@@ -70,11 +70,14 @@ steps:
       port: 22
       key:
         from_secret: deploy_ssh_key
-      script:
-        - echo $GITHUB_TOKEN | sudo /home/deployer/deploy-master.sh auth-service-web
-    environment:
+      # Указываем плагину, какие переменные нужно пробросить на сервер
+      envs:
+        - GITHUB_TOKEN
+      # Сама переменная объявляется тут же, внутри settings
       GITHUB_TOKEN:
         from_secret: github_token
+      script:
+        - echo $GITHUB_TOKEN | sudo /home/deployer/deploy-master.sh auth-service-web
     when:
       - event: push
         branch: kraito
