@@ -1,0 +1,51 @@
+pipeline:
+  # Шаг 1: Установка зависимостей и сборка
+  build-frontend:
+    image: oven/bun:latest
+    commands:
+      - bun install
+      - bun run build
+    when:
+      branch: main
+      event: push
+
+  # Шаг 2: Сборка Docker-образа и пуш в Registry
+  publish-docker:
+    image: plugins/docker
+    settings:
+      repo: your-registry.com/kraito/frontend # Замените на ваш репозиторий
+      tags: 
+        - latest
+        - ${CI_COMMIT_SHA:0:8}
+      # Секреты нужно добавить в настройки репозитория в Woodpecker
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      registry: your-registry.com # Опционально, если не Docker Hub
+    when:
+      branch: main
+      event: push
+
+  # Шаг 3: Автоматический деплой (Опционально)
+    deploy:
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: deploy_host
+      username: deployer
+      port: 22
+      key:
+        from_secret: deploy_ssh_key
+      script:
+        - echo $GITHUB_TOKEN | sudo /home/deployer/deploy-master.sh auth-service-web
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    when:
+      - event: push
+        branch: kraito
+        evaluate: 'not (CI_COMMIT_MESSAGE contains "[deploy]")'
+    when:
+      branch: main
+      event: push
