@@ -71,7 +71,8 @@ steps:
       key:
         from_secret: deploy_ssh_key
       script:
-        - echo $GITHUB_TOKEN | sudo /home/deployer/deploy-master.sh auth-service-web
+        #- echo $GITHUB_TOKEN | sudo /home/deployer/deploy-master.sh auth-service-web
+        - sudo /home/deployer/deploy-master.sh auth-service-web
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
