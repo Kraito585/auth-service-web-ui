@@ -180,7 +180,7 @@ export function AuthFlow() {
     } catch (e) {}
 
     return (
-      <Container size={420} my={40}>
+      <Container size={420} w="100%">
         <Paper 
           withBorder 
           shadow="md" 
@@ -217,7 +217,7 @@ export function AuthFlow() {
 
   if (step === 'email_confirm') {
     return (
-      <Container size={420} my={40}>
+      <Container size={420} w="100%">
         <EmailConfirmForm onSuccess={handleEmailConfirmed} />
       </Container>
     );
@@ -225,9 +225,21 @@ export function AuthFlow() {
 
   if (step === 'totp_offer') {
     return (
-      <Container size={420} my={40}>
+      <Container size={420} w="100%">
         <Title order={3} ta="center" mb="md">Усилить безопасность?</Title>
-        <Paper withBorder shadow="md" p={30} radius="md">
+        <Paper 
+          withBorder 
+          shadow="md" 
+          p={30} 
+          radius="md" 
+          w="100%"        // Фиксируем ширину (занимает все 420px от Container)
+          mih={450}       // Фиксируем минимальную высоту
+          style={{        // Включаем Flexbox для центрирования контента по вертикали
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center' 
+          }}
+        >
           <Text size="sm" c="dimmed" mb="md">
             Ваша почта подтверждена. Хотите подключить двухфакторную авторизацию (TOTP) прямо сейчас?
           </Text>
@@ -242,8 +254,20 @@ export function AuthFlow() {
 
   // Дефолтный шаг: Вход / Регистрация
   return (
-    <Container size={420} my={40}>
-      <Paper withBorder shadow="md" p={30} radius="md">
+    <Container size={420} w="100%">
+      <Paper 
+        withBorder 
+        shadow="md" 
+        p={30} 
+        radius="md" 
+        w="100%"        // Фиксируем ширину (занимает все 420px от Container)
+        mih={450}       // Фиксируем минимальную высоту
+        style={{        // Включаем Flexbox для центрирования контента по вертикали
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center' 
+        }}
+      >
         <Tabs defaultValue="login">
           <Tabs.List grow mb="lg">
             <Tabs.Tab value="login">Вход</Tabs.Tab>
