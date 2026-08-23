@@ -181,7 +181,19 @@ export function AuthFlow() {
 
     return (
       <Container size={420} my={40}>
-        <Paper withBorder shadow="md" p={30} radius="md" ta="center">
+        <Paper 
+          withBorder 
+          shadow="md" 
+          p={30} 
+          radius="md" 
+          w="100%"        // Фиксируем ширину (занимает все 420px от Container)
+          mih={450}       // Фиксируем минимальную высоту
+          style={{        // Включаем Flexbox для центрирования контента по вертикали
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center' 
+          }}
+        >
           <Title order={3} mb="md">Авторизация</Title>
           
           {authError && <Text c="red" size="sm" mb="md">{authError}</Text>}
