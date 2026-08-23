@@ -1,34 +1,67 @@
-pipeline:
-  # Шаг 1: Установка зависимостей и сборка
+steps:
+  # Единый шаг сборки статики (и для тестов PR, и для финальных образов)
   build-frontend:
     image: oven/bun:latest
     commands:
       - bun install
       - bun run build
     when:
-      branch: main
-      event: push
+      - event: [pull_request, push]
+        branch: [main, kraito]
+        evaluate: 'not (CI_COMMIT_MESSAGE contains "[build]")'
 
-  # Шаг 2: Сборка Docker-образа и пуш в Registry
-  publish-docker:
-    image: plugins/docker
-    settings:
-      repo: your-registry.com/kraito/frontend # Замените на ваш репозиторий
-      tags: 
-        - latest
-        - ${CI_COMMIT_SHA:0:8}
-      # Секреты нужно добавить в настройки репозитория в Woodpecker
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-      registry: your-registry.com # Опционально, если не Docker Hub
+  # Комментарий в PR при успешной сборке
+  pr-comment:
+    image: curlimages/curl:latest
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - >
+        curl -s -X POST 
+        -H "Authorization: Bearer $GITHUB_TOKEN" 
+        -H "Accept: application/vnd.github+json" 
+        https://api.github.com/repos/$CI_REPO/issues/$CI_COMMIT_PULL_REQUEST/comments 
+        -d '{"body": "✅ **Woodpecker CI:** Фронтенд успешно собран! Код готов к слиянию."}'
     when:
-      branch: main
-      event: push
+      - event: pull_request
+        branch: main
+        status: success
 
-  # Шаг 3: Автоматический деплой (Опционально)
-    deploy:
+  # Публикация production-образа из ветки main
+  publish-image-main:
+    image: woodpeckerci/plugin-docker-buildx
+    privileged: true
+    settings:
+      registry: ghcr.io
+      repo: ghcr.io/kraito585/auth-service-web-ui
+      tags: latest
+      username: Kraito585
+      password:
+        from_secret: github_token
+    when:
+      - event: push
+        branch: main
+        evaluate: 'not (CI_COMMIT_MESSAGE contains "[build]")'
+
+  # Публикация тестового образа из ветки kraito
+  publish-image-kraito:
+    image: woodpeckerci/plugin-docker-buildx
+    privileged: true
+    settings:
+      registry: ghcr.io
+      repo: ghcr.io/kraito585/auth-service-web-ui
+      tags: test
+      username: Kraito585
+      password:
+        from_secret: github_token
+    when:
+      - event: push
+        branch: kraito
+        evaluate: 'not (CI_COMMIT_MESSAGE contains "[build]")'
+
+  # Деплой на сервер при обновлении ветки kraito
+  deploy:
     image: appleboy/drone-ssh
     settings:
       host:
@@ -46,6 +79,11 @@ pipeline:
       - event: push
         branch: kraito
         evaluate: 'not (CI_COMMIT_MESSAGE contains "[deploy]")'
-    when:
-      branch: main
-      event: push
+
+when:
+  - event: push
+    branch:
+      - main
+      - kraito
+  - event: pull_request
+    branch: main
