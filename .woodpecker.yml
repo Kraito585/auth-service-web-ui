@@ -80,7 +80,9 @@ steps:
         - echo $GITHUB_TOKEN | sudo /home/deployer/deploy-master.sh auth-service-web
     when:
       - event: push
-        branch: kraito
+        branch: 
+          - kraito
+          - main
         evaluate: 'not (CI_COMMIT_MESSAGE contains "[deploy]")'
 
 when:
