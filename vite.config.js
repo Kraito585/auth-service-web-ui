@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/auth/api': {
-        target: 'https://kraito.ru',
+        target: 'https://api.kraito.ru',
         changeOrigin: true,
         // Переписываем домен в куках
         cookieDomainRewrite: {
